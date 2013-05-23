@@ -14,8 +14,20 @@
   Repository: https://github.com/davidbrewer/xmonad-ubuntu-conf
 -}
 
+
 import XMonad
+
+-- Utils
+import XMonad.Util.EZConfig
+import XMonad.Util.Run
+
+-- Hooks
 import XMonad.Hooks.SetWMName
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.UrgencyHook
+
+-- Layouts
 import XMonad.Layout.Grid
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.IM
@@ -24,12 +36,9 @@ import XMonad.Layout.NoBorders
 import XMonad.Layout.Circle
 import XMonad.Layout.PerWorkspace (onWorkspace)
 import XMonad.Layout.Fullscreen
-import XMonad.Util.EZConfig
-import XMonad.Util.Run
-import XMonad.Hooks.DynamicLog
+
+-- Misc
 import XMonad.Actions.Plane
-import XMonad.Hooks.ManageDocks
-import XMonad.Hooks.UrgencyHook
 import qualified XMonad.StackSet as W
 import qualified Data.Map as M
 import Data.Ratio ((%))
@@ -204,6 +213,8 @@ myKeyBindings =
     , ((myModMask, xK_z), sendMessage MirrorExpand)
     , ((myModMask, xK_p), spawn "synapse")
     , ((myModMask, xK_u), focusUrgent)
+    , ((myModMask .|. shiftMask, xK_l)
+      , spawn "gnome-screensaver-command -l")
     , ((0, 0x1008FF12), spawn "amixer -q set Master toggle")
     , ((0, 0x1008FF11), spawn "amixer -q set Master 10%-")
     , ((0, 0x1008FF13), spawn "amixer -q set Master 10%+")
@@ -330,8 +341,52 @@ myKeys = myKeyBindings ++
   content into it via the logHook..
 -}
 
+{-
+myXmobarPP = defaultPP {
+    , ppCurrent = xmobarColor myCurrentWSColor ""
+      . wrap myCurrentWSLeft myCurrentWSRight
+    , ppUrgent = xmobarColor myUrgentWSColor ""
+      . wrap myUrgentWSLeft myUrgentWSRight
+    , ppTitle = xmobarColor myTitleColor "" . shorten myTitleLength
+    }
+
+myLogHook xm1 xm2 = dynamicLogWithPP myXmobarPP { ppOutput = hPutStrLn xm1 }
+                 >> dynamicLogWithPP myXmobarPP { ppOutput = hPutStrLn xm2 }
+
+
+myConfig xm1 xm2 = defaultConfig {
+      workspaces = myWorkspaces
+    , modMask = myModMask
+    , borderWidth = myBorderWidth
+    , normalBorderColor = myNormalBorderColor
+    , focusedBorderColor = myFocusedBorderColor
+    , terminal = myTerminal
+    , layoutHook = myLayouts
+    , manageHook = manageHook defaultConfig
+        <+> composeAll myManagementHooks
+        <+> manageDocks
+    , logHook = myLogHook xm1 xm2
+    }
+-}
+
+myXmobarPP = defaultPP {
+    ppTitle = xmobarColor myTitleColor "" . shorten myTitleLength
+    , ppCurrent = xmobarColor myCurrentWSColor ""
+      . wrap myCurrentWSLeft myCurrentWSRight
+    , ppVisible = xmobarColor myVisibleWSColor ""
+      . wrap myVisibleWSLeft myVisibleWSRight
+    , ppUrgent = xmobarColor myUrgentWSColor ""
+      . wrap myUrgentWSLeft myUrgentWSRight
+    }
+
+myLogHook xm1 xm2 = dynamicLogWithPP myXmobarPP { ppOutput = hPutStrLn xm1 }
+                 >> dynamicLogWithPP myXmobarPP { ppOutput = hPutStrLn xm2 }
+
 main = do
-  xmproc <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
+  -- xmproc <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
+  xm1 <- spawnPipe "xmobar --screen=0 ~/.xmonad/xmobarrc"
+  xm2 <- spawnPipe "xmobar --screen=1 ~/.xmonad/xmobarrc"
+  -- xmonad $ withUrgencyHook NoUrgencyHook $ myConfig xm1 xm2
   xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig {
     focusedBorderColor = myFocusedBorderColor
   , normalBorderColor = myNormalBorderColor
@@ -348,8 +403,12 @@ main = do
   , manageHook = manageHook defaultConfig
       <+> composeAll myManagementHooks
       <+> manageDocks
+  , logHook = myLogHook xm1 xm2
+  {-
   , logHook = dynamicLogWithPP $ xmobarPP {
-      ppOutput = hPutStrLn xmproc
+      -- ppOutput = hPutStrLn xmproc
+      ppOutput = hPutStrLn xm1
+      -- , ppOutput = hPutStrLn xm2
       , ppTitle = xmobarColor myTitleColor "" . shorten myTitleLength
       , ppCurrent = xmobarColor myCurrentWSColor ""
         . wrap myCurrentWSLeft myCurrentWSRight
@@ -358,5 +417,6 @@ main = do
       , ppUrgent = xmobarColor myUrgentWSColor ""
         . wrap myUrgentWSLeft myUrgentWSRight
     }
+  -}
   }
     `additionalKeys` myKeys
