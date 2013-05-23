@@ -2,8 +2,11 @@
 # 
 # xmonad startup script. Intended to be run from an xsession configuration
 # to run xmonad and some associated programs.
-# 
-# Author: David Brewer
+#
+# Author: Isaac Boehman
+# Repository: https://github.com/idboehman/xmonad-ubuntu-conf 
+#
+# Original Author: David Brewer
 # Repository: https://github.com/davidbrewer/xmonad-ubuntu-conf
 
 #
@@ -28,31 +31,36 @@ xcompmgr -n &
 # SCREEN CONFIGURATION
 #
 
-# We handle our screen configuration using xrandr. You are likely to want to 
+# We handle our screen configuration using xrandr. You will likely want to 
 # edit this section to match the specific demands of your setup. The below
-# setup is for a Lenovo W520 laptop that sometimes has an external monitor
-# hooked up via either VGA or DVI, positioned to the left of the laptop.
+# setup is for a Dell XPS13 ultrabook that most of the time has an external
+# monitor hooked up via MiniDP -> HDMI, positioned to the right of the laptop.
 #
 # Note that you can run xrandr at the command line to get a list of your
 # connected screens and find out what names you should use to refer to them.
 
 # Activate primary screen 
-xrandr --output LVDS-1 --auto --primary
+xrandr --output eDP1 --auto --primary
 
 # If we find that a screen is connected via VGA, activate it and position it
 # to the left of the primary screen.
-xrandr | grep 'VGA-1 connected' | ifne xrandr --output VGA-1 --auto --left-of LVDS-1
+#xrandr | grep 'VGA-1 connected' | ifne xrandr --output VGA-1 --auto --left-of LVDS-1
+
+# If we find that a screen is connected via HDMI, activate it and position it
+# to the right of the primary screen
+#xrandr | grep 'HDMI1 connected' | ifne xrandr --output HDMI1 --auto --right-of eDP1 --primary --pos 1920x0
+xrandr | grep 'HDMI1 connected' | ifne xrandr --output HDMI1 --mode 1920x1080 --pos 1920x0 --rotate normal --primary --output eDP1 --mode 1920x1080 --pos 0x696 --rotate normal
 
 # If we find that a screen is connected via DVI, activate it and position it
 # to the left of the primary screen.
-xrandr | grep 'DP-1 connected' | ifne xrandr --output DP-1 --auto --left-of LVDS-1
+#xrandr | grep 'DP-1 connected' | ifne xrandr --output DP-1 --auto --left-of LVDS-1
 
 
 #
 # LOAD SCREEN BACKGROUNDS
 #
 
-# To set your backgrounds, run nitrogren /path/to/images
+# To set your backgrounds, run nitrogen /path/to/images
 nitrogen --restore &
 
 
@@ -96,6 +104,10 @@ stalonetray \
 # as Empathy. This prevents prompts you may otherwise get for invalid
 # certificates and the like.
 gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh
+
+# Enables locking and autolocking of the screen
+xautolock -time 10 -locker "gnome-screensaver-command -l" -notify 10 \
+  -notifier "notify-send -t 2000 -i gtk-dialog-info 'Locking in 10 seconds'"
 
 # Now, finally, start xmonad
 exec xmonad
