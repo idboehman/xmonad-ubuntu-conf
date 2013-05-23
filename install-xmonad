@@ -17,15 +17,59 @@
 # 
 # Author: David Brewer
 
-echo "Installing required packages..."
-sudo apt-get install xmonad libghc-xmonad-dev libghc-xmonad-contrib-dev xmobar xcompmgr nitrogen stalonetray moreutils synapse ssh-askpass-gnome thunar terminator remmina
+set -e # Terminate script as soon as any command fails
 
-echo "Creating xmonad xsession configuration..."
-sudo mv /usr/share/xsessions/xmonad.desktop /usr/share/xsessions/xmonad.desktop.original
-sudo cp ~/.xmonad/xmonad.desktop /usr/share/xsessions
-sudo cp ~/.xmonad/images/custom_xmonad_badge.png /usr/share/unity-greeter
+# colors for pretty output
+red_fg=`tput setf 4`
+green_fg=`tput setf 2`
+bold=`tput bold`
+nrml=`tput sgr0`
 
-echo "Linking to customized gnome 2 configuration..."
-mv ~/.gtkrc-2.0 ~/gtkrc-2.0.original
-ln -s .xmonad/.gtkrc-2.0 ~/.gtkrc-2.0
+function tst() {
+  # conditionally echo's based on the given commands exit status
+  "${@}"
+  status=${?}
+  if [[ ${status} -ne 0 ]]; then
+    echo "${bold}${red_fg}Error executing: ${@}${nrml}"
+  else
+    echo "${bold}${green_fg}Succesfully executed: ${@}${nrml}"
+  fi
+}
 
+
+function install_req_packages() {
+  echo "Installing required packages..."
+  tst sudo apt-get install -y xmonad libghc-xmonad-dev libghc-xmonad-contrib-dev \
+                              xmobar xcompmgr nitrogen stalonetray moreutils \
+                              synapse terminator
+}
+
+function install_opt_packages() {
+  echo "Installing optional packages"
+  tst sudo apt-get install -y ssh-askpass-gnome thunar remmina
+}
+
+function create_xsess_config() {
+  echo "Creating xmonad xsession configuration..."
+  if test -e /usr/share/xsessions/xmonad.desktop; then
+    echo "Backing up original xmonad.desktop to xmonad.desktop.original"
+    tst sudo mv /usr/share/xsessions/xmonad.desktop /usr/share/xsessions/xmonad.desktop.original
+  fi
+  
+  tst sudo cp ~/.xmonad/xmonad.desktop /usr/share/xsessions
+  tst sudo cp ~/.xmonad/images/custom_xmonad_badge.png /usr/share/unity-greeter
+}
+
+function gnome2_config() {
+  echo "Linking to customized gnome 2 configuration..."
+  if test -e ~/.gtkrc-2.0; then
+    echo "Backing up original .gtkrc-2.0 to gtkrc-2.0.original"
+    tst mv ~/.gtkrc-2.0 ~/gtkrc-2.0.original
+  fi
+  tst ln -s .xmonad/.gtkrc-2.0 ~/.gtkrc-2.0
+}
+
+#install_req_packages
+#install_opt_packages
+#create_xsess_config
+#gnome2_config
