@@ -211,10 +211,16 @@ myKeyBindings =
     ((myModMask, xK_b), sendMessage ToggleStruts)
     , ((myModMask, xK_a), sendMessage MirrorShrink)
     , ((myModMask, xK_z), sendMessage MirrorExpand)
-    , ((myModMask, xK_p), spawn "synapse")
+    , ((myModMask, xK_p), spawn "synapse") -- launch a program
     , ((myModMask, xK_u), focusUrgent)
-    , ((myModMask .|. shiftMask, xK_l)
+    , ((myModMask .|. shiftMask, xK_l) -- Lock the screen
       , spawn "gnome-screensaver-command -l")
+    -- Take screenshot of entire display
+    , ((0, xK_Print), spawn "scrot -e 'mv $f ~/Pictures/Screenshots'")
+    , ((myModMask, xK_Print) -- Interactive Screenshot
+      , spawn "sleep 0.2; scrot -s -e 'mv $f ~/Pictures/Screenshots'")
+    , ((myModMask .|. shiftMask, xK_Print)
+      , spawn "sleep 0.2; scrot -s -e 'imgur $f && mv $f ~/Pictures/Screenshots'")
     , ((0, 0x1008FF12), spawn "amixer -q set Master toggle")
     , ((0, 0x1008FF11), spawn "amixer -q set Master 10%-")
     , ((0, 0x1008FF13), spawn "amixer -q set Master 10%+")
