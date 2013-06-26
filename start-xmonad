@@ -105,10 +105,8 @@ stalonetray \
 # certificates and the like.
 gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh
 
-# Enables locking and autolocking of the screen
-xautolock -time 10 -locker "gnome-screensaver-command -l" -notify 10 \
-  -notifier "notify-send -t 2000 -i gtk-dialog-info 'Locking in 10 seconds'"
+# Disable touchpad while typing
+syndaemon -d -i 1
 
 # Now, finally, start xmonad
 exec xmonad
-
