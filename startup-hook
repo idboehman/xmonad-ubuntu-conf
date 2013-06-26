@@ -28,11 +28,6 @@ if [ -z "$(pgrep xautolock)" ]; then
     -notifier "notify-sent -t 2000 -i gtk-dialog-info 'Locking in 10 seconds'" &
 fi
 
-# Automatically start VPN
-if [ -z "$(pgrep openvpn)" ]; then
-    sudo openvpn --config /client.ovpn
-fi
-
 #
 # APPLICATION LAUNCHER
 #
